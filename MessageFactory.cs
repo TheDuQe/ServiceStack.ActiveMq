@@ -19,17 +19,17 @@ namespace ServiceStack.ActiveMq
 		public Action<string, Apache.NMS.IPrimitiveMap, ServiceStack.Messaging.IMessage> PublishMessageFilter { get; set; }
 		public Action<string, ServiceStack.Messaging.IMessage> GetMessageFilter { get; set; }
 
-		internal MessageFactory(string BrokerUri, string Username, string Password) :
-			this(new Uri(BrokerUri), Username, Password)
+		internal MessageFactory(string BrokerUri, string username, string password) :
+			this(new Uri(BrokerUri), username, password)
 		{
 
 		}
 
-		internal MessageFactory(Uri BrokerUri, string Username, string Password)
+		internal MessageFactory(Uri BrokerUri, string username, string password)
 		{
 			IConnectionFactory connectionFactory = Apache.NMS.NMSConnectionFactory.CreateConnectionFactory(BrokerUri);
-			this.UserName = UserName;
-			this.Password = Password;
+			this.UserName = username;
+			this.Password = password;
 			BuildConnectionFactory(connectionFactory);
 		}
 
