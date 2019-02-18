@@ -304,7 +304,8 @@ namespace ServiceStack.ActiveMq
 				{
 					await OpenSessionAsync();
 					semaphoreProducer.Wait();
-					destination = this.Session.GetDestination(queuename);
+					destination = ((Apache.NMS.ActiveMQ.Session)this.Session).GetDestination(queuename);
+
 					_producer = this.Session.CreateProducer(destination);
 					if (_producer != default(Apache.NMS.IMessageProducer)) _producer.ProducerTransformer = CreateProducerTransformer();
 

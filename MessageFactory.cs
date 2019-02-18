@@ -60,7 +60,7 @@ namespace ServiceStack.ActiveMq
 					((Apache.NMS.ActiveMQ.ConnectionFactory)this.ConnectionFactory).UserName = this.UserName;
 					((Apache.NMS.ActiveMQ.ConnectionFactory)this.ConnectionFactory).Password = this.Password;
 				}
-
+#if !NETCOREAPP2_0
 				if (this.TransportType == ConnectionType.STOMP)
 				{
 					this.GenerateConnectionId = new Func<string>((new Apache.NMS.Stomp.Util.IdGenerator(prefix)).GenerateSanitizedId);
@@ -68,7 +68,7 @@ namespace ServiceStack.ActiveMq
 					((Apache.NMS.Stomp.ConnectionFactory)this.ConnectionFactory).UserName = this.UserName;
 					((Apache.NMS.Stomp.ConnectionFactory)this.ConnectionFactory).Password = this.Password;
 				}
-
+#endif
 				this.isConnected = new Func<bool>(() => transport.IsConnected);
 				this.isFaultTolerant = new Func<bool>(() => transport.IsFaultTolerant);
 				this.isStarted = new Func<bool>(() => transport.IsStarted);
@@ -165,7 +165,9 @@ namespace ServiceStack.ActiveMq
 			get
 			{
 				if (ConnectionFactory is Apache.NMS.ActiveMQ.ConnectionFactory) return ConnectionType.ActiveMQ;
+#if !NETCOREAPP2_0
 				if (ConnectionFactory is Apache.NMS.Stomp.ConnectionFactory) return ConnectionType.STOMP;
+#endif
 				return ConnectionType.ActiveMQ;
 			}
 		}
@@ -202,7 +204,7 @@ namespace ServiceStack.ActiveMq
 			};
 		}
 
-		#region IDisposable Support
+#region IDisposable Support
 		private bool disposedValue = false; // To detect redundant calls
 
 		protected virtual void Dispose(bool disposing)
@@ -241,7 +243,7 @@ namespace ServiceStack.ActiveMq
 		{
 			throw new NotImplementedException();
 		}
-		#endregion
+#endregion
 
 	}
 }
