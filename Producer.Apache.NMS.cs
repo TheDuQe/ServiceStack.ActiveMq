@@ -109,7 +109,7 @@ namespace ServiceStack.ActiveMq
 
 		private void Connection_ExceptionListener(Exception exception)
 		{
-			//this.OnMessagingError(exception);
+			this.OnMessagingError(exception);
 		}
 
 		private void Connection_ConnectionResumedListener()
@@ -258,7 +258,7 @@ namespace ServiceStack.ActiveMq
 					catch (Exception ex)
 					{
 						ActiveMqExtensions.Logger.Warn($"A problem occured while creating a Consumer on queue [{queuename}]: {ex.GetBaseException().Message}");
-						return _consumer;
+						throw;
 					}
 					finally
 					{

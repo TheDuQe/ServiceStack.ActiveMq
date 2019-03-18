@@ -89,8 +89,6 @@ namespace ServiceStack.ActiveMq
 		internal async Task<IConnection> GetConnectionAsync()
 		{
 			IConnection connection = null;
-			Exception ex = null;
-			bool retry = false;
 			System.Timers.Timer checkConnectionState = new System.Timers.Timer(TimeSpan.FromSeconds(30).TotalMilliseconds)
 			{
 				AutoReset = true,
@@ -106,45 +104,27 @@ namespace ServiceStack.ActiveMq
 				ActiveMqExtensions.Logger.Info($"Etablish connection to ActiveMQBroker [{this.ConnectionFactory.BrokerUri.AbsolutePath}]");
 				connection = this.ConnectionFactory.CreateConnection(this.UserName, this.Password);
 				connection.ClientId = this.GenerateConnectionId();
-				return connection;
 			}
-			catch (NMSConnectionException exc)
+			catch (Exception ex)
 			{
-				ex = exc;
-				retry = true;
-			}
-			catch (InvalidClientIDException exc)
-			{
-				ex = exc;
-			}
-			catch (Exception exc)
-			{
-				if (exc.Source != "Apache.NMS.Stomp") // Somme methods called by Apache.NMS to Stomp are not implemented... in Apache.NMS.Stomp
-				{
-					ex = exc;
-					throw;
-				}
-				else
-				{
-					ActiveMqExtensions.Logger.Warn(exc.Message);
-				}
+				ActiveMqExtensions.Logger.Error(ex.Message);
 			}
 			finally
 			{
 				checkConnectionState.Elapsed -= warnConnectionState;
 			}
 
-			if (retry)
+			if (connection == default(IConnection))
 			{
-				ActiveMqExtensions.Logger.Warn($"[Worker {connection.ClientId}] > {ex.Message} - Retry in 5 seconds");
+				ActiveMqExtensions.Logger.Warn($"[Worker {connection.ClientId}] > Connection failed > Retry in {NMSConstants.defaultRequestTimeout.TotalSeconds} seconds");
 				new System.Threading.AutoResetEvent(false).WaitOne(NMSConstants.defaultRequestTimeout);
 				return await GetConnectionAsync();            // Retry
 			}
 			else
 			{
-				ActiveMqExtensions.Logger.Error($"Could not connect to ActiveMQ [{this.ConnectionFactory.BrokerUri}]", ex.GetBaseException());
+				return connection;
 			}
-			return null;
+			
 		}
 
 

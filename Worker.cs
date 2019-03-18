@@ -16,7 +16,7 @@ namespace ServiceStack.ActiveMq
 		internal static async Task<Worker> StartAsync(Server service, ServiceStack.Messaging.IMessageHandlerFactory handlerFactory)
 		{
 			Worker client = new Worker(handlerFactory, service.MessageFactory, service.ErrorHandler);
-			await Task.Factory.StartNew(() => client.Dequeue());
+			await client.Dequeue();
 			return client;
 		}
 
@@ -51,30 +51,26 @@ namespace ServiceStack.ActiveMq
 			}
 		}
 
-		internal void Dequeue(long messagesCount = long.MaxValue, TimeSpan? timeOut = null)
+		internal async Task Dequeue(long messagesCount = long.MaxValue, TimeSpan? timeOut = null)
 		{
 			if (!timeOut.HasValue) timeOut = System.Threading.Timeout.InfiniteTimeSpan;
 			var queue = ((QueueClient)this.MQClient);
-			try
+
+			// Open connection and once opened (Serverr might be anavailable)...
+			await queue.StartAsync().ContinueWith(tsk =>
 			{
-				queue.StartAsync().ContinueWith(tsk=> {
-					try
-					{
-						queue.MessageHandler.ProcessQueue(queue, queue.QueueName, () => GetStats().TotalMessagesProcessed <= messagesCount);
-					}
-					catch (Exception ex)
-					{
-						Log.Error(new OperationCanceledException($"The is queue [{queue.QueueName}] might not work as an exception occured while listening", ex));
-						Dequeue();
-					}
-					
-				});
-			}
-			catch (Exception ex)
-			{
-				ErrorHandler?.Invoke(this, ex);
-				Log.Error("Could not START Active MQ Worker : ", ex);
-			}
+				try
+				{
+					// Start to dequeue
+					Task.Factory.StartNew(()=>queue.MessageHandler.ProcessQueue(queue, queue.QueueName, () => GetStats().TotalMessagesProcessed <= messagesCount));
+				}
+				catch (Exception ex)
+				{
+					Log.Error(new OperationCanceledException($"The is queue [{queue.QueueName}] might not work as an exception occured while listening", ex));
+					ErrorHandler?.Invoke(this, ex);
+				}
+			});
+
 
 		}
 
