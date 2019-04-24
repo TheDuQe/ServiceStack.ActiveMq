@@ -25,6 +25,7 @@
 		<PackageReference Include="Apache.NMS.Stomp" Version="1.5.4" />
 	</ItemGroup>
 	<ItemGroup Condition="'$(TargetFramework)' == 'netstandard20' ">
+		<PackageReference Include="Apache.NMS.NetStd" Version="1.7.1.3898" />
 		<PackageReference Include="Apache.NMS.ActiveMQ.NetStd" Version="1.7.2.4114" />
 		<PackageReference Include="Apache.NMS.Stomp.NetStd" Version="1.5.4.3217" />
 	</ItemGroup>
