@@ -72,7 +72,7 @@ stages {
 
 	stage("Archive"){
 		steps {
-				archive "${WORKSPACE}\\Temp\\**"
+				archiveArtifacts "${WORKSPACE}\\Temp\\**"
 				script{
 					for (def file : findFiles(glob: "**/*.${packageVersion}.nupkg")) { 	
 						nugetPush(	file.path, 	artefactsDir + '/' + file.name.replaceAll(".${packageVersion}.nupkg","")); 
