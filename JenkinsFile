@@ -26,10 +26,10 @@ stages {
 	stage("Build"){
 			steps {
 				script {
-				            if(params.SlnVersion != "ReleaseManager")
+				            if(params.Version != "ReleaseManager")
 				            {
 				                //Actual : 3 digits
-				                packageVersion = params.SlnVersion + ".${BUILD_NUMBER}";
+				                packageVersion = params.Version + ".${BUILD_NUMBER}";
 								println("VERSION GOT FROM PIPELINE PARAMETER : ${packageVersion}");
 				            }
 				            else
@@ -58,7 +58,7 @@ stages {
 					println ".Net environment:"
 					bat """ dotnet --info """
                     
-					bat """ dotnet build "${solutionFile}.sln" --configuration "${configuration}" /t:pack /p:Version="${packageVersion}" /p:Platform=\"Any CPU\" /flp:v=diag;logfile="${WORKSPACE}\\Temp\\Build.txt" """
+					bat """ dotnet build "${solutionFile}.sln" --configuration "${configuration}" -p:Version="${packageVersion}" /flp:v=diag;logfile="${WORKSPACE}\\Temp\\Build.txt" """
 			}
 		}
 		
@@ -72,13 +72,16 @@ stages {
 
 	stage("Archive"){
 		steps {
-				archiveArtifacts "${WORKSPACE}\\Temp\\**"
-				script{
+			script{	
+				archive "${WORKSPACE}\\Temp\\**"
+				def nuget = tool name: "nuget-5.0.2.5988", type: "com.cloudbees.jenkins.plugins.customtools.CustomTool"
+		        withEnv(["PATH+nuget=${nuget}"]){
 					for (def file : findFiles(glob: "**/*.${packageVersion}.nupkg")) { 	
 						nugetPush(	file.path, 	artefactsDir + '/' + file.name.replaceAll(".${packageVersion}.nupkg","")); 
-						}
+					}
 				}
-			}
+		    }
+		}
 	}
 }
 }
