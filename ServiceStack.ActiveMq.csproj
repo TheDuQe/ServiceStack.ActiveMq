@@ -1,32 +1,46 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFrameworks>net45;netstandard20</TargetFrameworks>
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-		<AssemblyName>ServiceStack.ActiveMq</AssemblyName>
-		<PackageId>ServiceStack.ActiveMq</PackageId>
-		<Description>ServiceStack builds on top of Apache.NMS.ActiveMQ to provide concrete implementations for ServiceStack’s high-level Messaging APIs enabling a number of messaging features including publishing and receiving messages as well as registering and processing message handlers. Like other ServiceStack providers, all MQ Servers are interchangeable, visible in the shared common MqServerIntroTests.cs and MqServerAppHostTests.cs.</Description>
-		<GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
-		<GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
-		<GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
-		<GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
-		<GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-		<GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
-		<GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
-		<GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
-		<GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
+    <TargetFrameworks>net45;netstandard20</TargetFrameworks>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Authors>Lectra</Authors>
+    <Company>Lectra</Company>
+    <!--<PackageIcon>https://activemq.apache.org/assets/img/activemq_logo_icon.png</PackageIcon>-->
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <AssemblyName>ServiceStack.ActiveMq</AssemblyName>
+    <Title>Common libraries for ServiceStack projects</Title>
+    <PackageDescription>
+      Typed .NET Core and .NET Framework ServiceClients based on .NET's HttpClient
+    </PackageDescription>
+    <PackageTags>ServiceStack;Common;Framework;Clients;ServiceClients;Gateway</PackageTags>
 	</PropertyGroup>
+  <PropertyGroup>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
+    <!--<GenerateDependencyFile>true</GenerateDependencyFile>-->
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+  <ItemGroup>
+    <SourceLinkVstsGitHost Include="dev.azure.com" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="ServiceStack" Version="5.4.0" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.6.0" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net45'">
+    <PackageReference Include="Apache.NMS" Version="1.8.0" />
+    <PackageReference Include="Apache.NMS.ActiveMQ" Version="1.7.2" />
+    <PackageReference Include="Apache.NMS.Stomp" Version="1.5.4" />
+  </ItemGroup>
+    <ItemGroup Condition="'$(TargetFramework)' == 'netstandard20'">
+      <PackageReference Include="Apache.NMS.NetStd" Version="1.7.1.3899" />
+      <PackageReference Include="Apache.NMS.ActiveMQ.NetStd" Version="1.7.2.4115" />
+      <PackageReference Include="Apache.NMS.Stomp.NetStd" Version="1.5.4.3218" />
+    </ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
-		<PackageReference Include="ServiceStack" Version="5.6.0" />
-	</ItemGroup>
-	<ItemGroup Condition="'$(TargetFramework)' == 'net45' ">
-		<Reference Include="Microsoft.CSharp" />
-		<PackageReference Include="Apache.NMS.ActiveMQ" Version="1.7.2" />
-		<PackageReference Include="Apache.NMS.Stomp" Version="1.5.4" />
-	</ItemGroup>
-	<ItemGroup Condition="'$(TargetFramework)' == 'netstandard20' ">
-		<PackageReference Include="Apache.NMS.NetStd" Version="1.7.1.3898" />
-		<PackageReference Include="Apache.NMS.ActiveMQ.NetStd" Version="1.7.2.4114" />
-		<PackageReference Include="Apache.NMS.Stomp.NetStd" Version="1.5.4.3217" />
+	  <None Update="nmsprovider.config">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
 	</ItemGroup>
 </Project>

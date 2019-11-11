@@ -23,8 +23,8 @@ using System.Runtime.Serialization;
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("22260189-e7d0-41c4-a23d-0a8712bc4e22")]
 
-[assembly: AssemblyVersion("5.1.0")]
-[assembly: AssemblyFileVersion("5.1.0")]
+[assembly: AssemblyVersion("5.7.0")]
+[assembly: AssemblyFileVersion("5.7.0")]
 
 [assembly: ContractNamespace("http://schemas.servicestack.net/types",
 	ClrNamespace = "ServiceStack.ActiveMq")]

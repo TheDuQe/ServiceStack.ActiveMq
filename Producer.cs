@@ -60,38 +60,63 @@ namespace ServiceStack.ActiveMq
 			return this.Session.CreateTemporaryQueue().QueueName;
 		}
 
-		public void Publish<T>(T messageBody)
+        public void Publish<T>(T messageBody)
+        {
+            Task.Run(() => PublishAsync(messageBody));
+        }
+
+        public void Publish<T>(ServiceStack.Messaging.IMessage<T> message)
+        {
+            Task.Run(() => PublishAsync(message));
+        }
+
+        public void Publish<T>(ServiceStack.Messaging.Message<T> message)
+        {
+            Task.Run(() => PublishAsync(message));
+        }
+
+        public void Publish(string queueName, ServiceStack.Messaging.IMessage message)
+        {
+            Task.Run(()=>PublishAsync(queueName, message));
+        }
+
+        private void Publish(string queueName, ServiceStack.Messaging.IMessage message, string topic)
+        {
+            Task.Run(() => PublishAsync(queueName, message, topic));
+        }
+
+        public async Task PublishAsync<T>(T messageBody)
 		{
 			var message = messageBody as ServiceStack.Messaging.Message<T>;
 			if (message != null)
 			{
-				Publish((ServiceStack.Messaging.Message<T>)message);
+				await PublishAsync((ServiceStack.Messaging.Message<T>)message);
 			}
 			else
 			{
-				Publish(new ServiceStack.Messaging.Message<T>(messageBody));
+				await PublishAsync(new ServiceStack.Messaging.Message<T>(messageBody));
 			}
 		}
 
-		public void Publish<T>(ServiceStack.Messaging.IMessage<T> message)
+		public async Task PublishAsync<T>(ServiceStack.Messaging.IMessage<T> message)
 		{
-			Publish(null, message);
+			await PublishAsync(null, message);
 		}
 
-		public void Publish<T>(ServiceStack.Messaging.Message<T> message)
+		public async Task PublishAsync<T>(ServiceStack.Messaging.Message<T> message)
 		{
-			Publish(null, message);
+			await PublishAsync(null, message);
 		}
 
-		public virtual void Publish(string queueName, ServiceStack.Messaging.IMessage message)
+		public virtual async Task PublishAsync(string queueName, ServiceStack.Messaging.IMessage message)
 		{
 			if (this.cancellationTokenSource.IsCancellationRequested) return;
 			if (string.IsNullOrWhiteSpace(queueName)) queueName = this.ResolveQueueNameFn(message.Body, ".outq");
-			Publish(queueName, message, Messaging.QueueNames.Exchange);
+			await PublishAsync(queueName, message, Messaging.QueueNames.Exchange);
 		}
 
 		protected AutoResetEvent publishing = new AutoResetEvent(true);
-		private async void Publish(string queueName, ServiceStack.Messaging.IMessage message, string topic)
+		private async Task PublishAsync(string queueName, ServiceStack.Messaging.IMessage message, string topic)
 		{
 			await Task.Factory.StartNew(() =>
 			{

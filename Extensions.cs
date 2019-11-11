@@ -24,25 +24,26 @@ namespace ServiceStack.ActiveMq
 			if (msgResult == null)
 				return null;
 
-			object Message = null;
+			object payload = null;
 			if(msgResult.Body is T)
 			{
-				Message = msgResult.Body;
+				payload = msgResult.Body;
 			}
 			else
 			{
-				Message = JsonSerializer.DeserializeFromString<T>(msgResult.Body.ToString());
+				payload = JsonSerializer.DeserializeFromString<T>(msgResult.Body.ToString());
 			}
 
 
 			Guid outValue = Guid.Empty;
-			var message = new Messaging.Message<T>((T)Message);
+			var message = new Messaging.Message<T>((T)payload);
 
 			message.Meta = new Dictionary<string, string>();
 
 			if (Guid.TryParse(msgResult.NMSMessageId, out outValue)) message.Id = outValue;
 			message.Meta.Add("Origin", msgResult.NMSDestination?.ToString());
-			message.CreatedDate = msgResult.NMSTimestamp;
+
+            message.CreatedDate = msgResult.NMSTimestamp;
 			message.Priority = (long)msgResult.NMSPriority;
 			message.ReplyTo = msgResult.NMSReplyTo==null?"": msgResult.NMSReplyTo?.ToString();
 			message.Tag = msgResult.NMSDeliveryMode.ToString();
@@ -50,8 +51,10 @@ namespace ServiceStack.ActiveMq
 
 			if(msgResult is Apache.NMS.ActiveMQ.Commands.ActiveMQMessage)
 			{
+
 				message.RetryAttempts = ((Apache.NMS.ActiveMQ.Commands.ActiveMQMessage)msgResult).NMSXDeliveryCount;
-			}
+                //message.Id = ((Apache.NMS.ActiveMQ.Commands.ActiveMQMessage)msgResult).MessageId.ToString();
+            }
 
 			if(Guid.TryParse(msgResult.NMSCorrelationID, out outValue)) message.ReplyId = outValue;
 

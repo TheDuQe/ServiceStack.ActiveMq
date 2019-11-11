@@ -56,7 +56,7 @@ namespace ServiceStack.ActiveMq
 			if (!timeOut.HasValue) timeOut = System.Threading.Timeout.InfiniteTimeSpan;
 			var queue = ((QueueClient)this.MQClient);
 
-			// Open connection and once opened (Serverr might be anavailable)...
+			// Open connection and once opened (Server might be unavailable)...
 			await queue.StartAsync().ContinueWith(tsk =>
 			{
 				try
