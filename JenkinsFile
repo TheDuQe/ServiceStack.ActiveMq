@@ -1,7 +1,8 @@
 def jobnameparts = JOB_NAME.tokenize('/') as String[]
 def artefactsDir = jobnameparts[jobnameparts.length-2]
-def solutionFile = jobnameparts[jobnameparts.length-1]
-def version = new com.lectra.ci.release.Version(solutionFile,"pilot-monopli-v1r1","-1.-1.-1.+1")
+def solutionFile = jobnameparts[jobnameparts.length-1] 
+def version
+def isLegacy = false
 
 // ***********************************************************************
 // <copyright file="JenkinsFile" company="Lectra">
@@ -14,74 +15,156 @@ def version = new com.lectra.ci.release.Version(solutionFile,"pilot-monopli-v1r1
 
 pipeline {
 
-agent {label 'vs2017'}
+	options {
+		buildDiscarder(logRotator(numToKeepStr: '10'))
+		disableConcurrentBuilds()
+		skipDefaultCheckout()
+		timeout(time: 1, unit: 'HOURS')
+		timestamps()
+	}
 
-environment{
+	agent {label 'vs2017'}
+
+	environment{
+		isLegacy = false
 		configuration="Release"
+		BIN_REPO = "\\\\srdsnas1\\BinRepo\\Pilotage\\6_Products\\${jobnameparts[jobnameparts.length-1]}\\${(jobnameparts[jobnameparts.length-1]).toUpperCase()}"
 		solutionFile = "${WORKSPACE}\\${solutionFile}"
-		packageVersion = ""
-    }
+	}
 
-stages {
-	stage("Build"){
+	stages {
+
+		stage ("Prepare") {
+			steps {
+				script{
+					if(jobnameparts[jobnameparts.length-2]=="Legacy"){isLegacy = true}
+				}
+
+
+				cleanWorkspace()
+				// Clone repository
+				checkout scm
+				bat """ git fetch --tags"""
+				bat """ git submodule update --init --recursive"""
+				
+
+				// Retrieve current GIT build info
+				bat """ del ${WORKSPACE}\\.git\\gitversion_cache /Q """
+				bat """ ${WORKSPACE}\\BuildProcess\\gitversion.exe /output buildserver"""
+
+				// Enregistrement des variables d'environnement du fichier gitversion.properties
+				script {
+					readFile('gitversion.properties').split("\r\n").each   { line ->
+						el = line.split("=")
+						env."${el[0]}" = (el.size() > 1) ? "${el[1]}" : "" }
+				}
+
+				// Print some important variables
+				bat '''
+					@echo Environnement variables
+					@echo GitVersion_SemVer			: %GitVersion_SemVer%
+					@echo GitVersion_BranchName		: %GitVersion_BranchName%
+					@echo GitVersion_AssemblySemVer		: %GitVersion_AssemblySemVer%
+					@echo GitVersion_MajorMinorPatch	: %GitVersion_MajorMinorPatch%	
+					@echo GitVersion_Sha			: %GitVersion_Sha%
+					'''
+			}
+		}
+
+		stage("Build"){
 			steps {
 				script {
-				            if(params.Version != "ReleaseManager")
-				            {
-				                //Actual : 3 digits
-				                packageVersion = params.Version + ".${BUILD_NUMBER}";
-								println("VERSION GOT FROM PIPELINE PARAMETER : ${packageVersion}");
-				            }
-				            else
-				            {
-				                //Legacy : 4 digits
-				                packageVersion=version.getBuildNumber() + "${BUILD_NUMBER}";
-								println("VERSION GOT FROM RELEASE MANAGER : ${packageVersion}");
-				            }
-				
-							// There is no folder Legacy : Default target URL for artefacts
-							artefactsDir= 	jobnameparts[jobnameparts.length-2] + '/'  + jobnameparts[jobnameparts.length-1]
-							
-							if(jobnameparts[jobnameparts.length-2]=="Legacy"){
-								// There is folder Legacy : Add Jenkins parent folder
-							    artefactsDir=	jobnameparts[jobnameparts.length-3] + '/' + jobnameparts[jobnameparts.length-2] + '/' + jobnameparts[jobnameparts.length-1] 
-								solutionFile = "${WORKSPACE}\\src\\${solutionFile}"
-							} 
-
-							def props = readProperties  file: 'build.properties'
-							currentBuild.displayName = packageVersion;
-						}
-						
-					println "Configuration   :					${configuration}"
-					println "SLN File        :					${solutionFile}.sln"
-					println "Package Version :					${packageVersion}"
-					println ".Net environment:"
+					fileVersion = "${GitVersion_MajorMinorPatch}.${GitVersion_CommitsSinceVersionSource}"
+					//Actual : 3 digits
+					println("VERSION READEN FROM GIT : ${GitVersion_AssemblySemFileVer}");
+					println "Publish to	:			 : ${BIN_REPO}"
+					println "-----------------------------------------------------------------------------------------"
 					bat """ dotnet --info """
-                    
-					bat """ dotnet build "${solutionFile}.sln" --configuration "${configuration}" -p:Version="${packageVersion}" /flp:v=diag;logfile="${WORKSPACE}\\Temp\\Build.txt" """
+
+					// There is no folder Legacy : Default target URL for artefacts
+					artefactsDir= 	jobnameparts[jobnameparts.length-2] + '/'  + jobnameparts[jobnameparts.length-1]
+					
+					if(isLegacy){
+						// There is folder Legacy : Add Jenkins parent folder
+						solutionFile = "${WORKSPACE}\\src\\${solutionFile}"
+					}
+					else
+					{
+						solutionFile = "${WORKSPACE}\\${solutionFile}"
+					}
+
+					currentBuild.displayName = "${GitVersion_FullSemVer}";
+				}
+
+				println("IsLegacy Build	: 	${isLegacy}");
+				println "Configuration  :	${configuration}"
+				println "SLN File       :	${solutionFile}.sln"
+				println "Package Build	:	${GitVersion_FullSemVer}"
+				println "FileVersion	:	${GitVersion_AssemblySemFileVer}"
+
+				println ".Net environment:"
+				bat """ dotnet --info """
+				
+				bat """ dotnet build "${solutionFile}.sln" --configuration "${configuration}" /p:Platform=\"Any CPU\" /nodeReuse:false /flp:v=diag;logfile="${WORKSPACE}\\Build\\Build.txt" """
+			}
+		}
+
+		stage("Test"){
+			steps {
+				println "dotnet Test turned off for this sln"
+				//bat """ dotnet test "${solutionFile}.sln" --logger:Trx """
+			}
+		}
+
+		// Push Nuget packages on Artefacts : Must be non-Legacy and Git commit must have a tag
+		stage("Publish"){
+			steps {
+				script{
+					if(params.PublishVersion && !isLegacy){
+						println("PUBLISH NUGETS IN ARTIFCATORY	: ");
+						artefactsDir= 	jobnameparts[jobnameparts.length-2] + '/'  + jobnameparts[jobnameparts.length-1]
+
+						def nuget = tool name: "nuget-5.0.2.5988", type: "com.cloudbees.jenkins.plugins.customtools.CustomTool"
+		        		withEnv(["PATH+nuget=${nuget}"]){
+								for (def file : findFiles(glob: "**/*.${GitVersion_NuGetVersionV2}.nupkg")) { 	
+									nugetPush(	file.path, 	artefactsDir + '/' + file.name.replaceAll(".${GitVersion_NuGetVersionV2}.nupkg","")); 
+								}
+						}
+
+						currentBuild.displayName = currentBuild.displayName + "+Nugets"
+					}
+						
+				}
 			}
 		}
 		
-	stage("Test"){
-			steps {
-			        println "dotnet Test turned off for this sln"
-				    //bat """ dotnet test "${solutionFile}.sln" --logger:Trx """
-			}
-		}
 
+		stage("Setup"){
+			steps{
+				script {
+					if(params.PublishVersion && isLegacy){
+							def setupVersion = GitVersion_AssemblySemFileVer //+ "." + BUILD_NUMBER
 
-	stage("Archive"){
-		steps {
-			script{	
-				archive "${WORKSPACE}\\Temp\\**"
-				def nuget = tool name: "nuget-5.0.2.5988", type: "com.cloudbees.jenkins.plugins.customtools.CustomTool"
-		        withEnv(["PATH+nuget=${nuget}"]){
-					for (def file : findFiles(glob: "**/*.${packageVersion}.nupkg")) { 	
-						nugetPush(	file.path, 	artefactsDir + '/' + file.name.replaceAll(".${packageVersion}.nupkg","")); 
+							println("PUSH VERSION TO RELEASE SERVER : [${setupVersion}]");
+							version = new com.lectra.ci.release.Version(jobnameparts[jobnameparts.length-1],"pilot-all",setupVersion)
+
+							println "Publish to	:					${BIN_REPO}"
+							println "Solution   :					${jobnameparts[jobnameparts.length-1]}"
+							println "Version	:					${setupVersion}"
+
+							bat """ xcopy distrib\\release ${BIN_REPO}-${setupVersion.replaceAll('\\.','_')}\\distrib\\release /Y /S /F /I """
+							bat """ IF EXIST distrib\\conf\\latest.remote/nul ( del /Q distrib\\conf\\latest.remote ) """
+							bat """ xcopy distrib\\conf ${BIN_REPO}-${setupVersion.replaceAll('\\.','_')}\\distrib\\conf /Y /S /F /I """
+
+							//Publish for setup if tag has been set
+							version.publishVersion(steps)
+							if(GitVersion_BranchName=='svn/BRANCH_EMBEDED_7_1_EVOL'){
+								gitTag ("${setupVersion}","Create tag ${setupVersion}")
+							}
+							currentBuild.displayName = currentBuild.displayName + "+Setup"
 					}
 				}
-		    }
+			}
 		}
 	}
-}
 }
