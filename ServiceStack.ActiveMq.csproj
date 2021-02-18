@@ -4,6 +4,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>Lectra</Authors>
     <Company>Lectra</Company>
+	<Version>5.6.0</Version>
     <!--<PackageIcon>https://activemq.apache.org/assets/img/activemq_logo_icon.png</PackageIcon>-->
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
