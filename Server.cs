@@ -166,6 +166,7 @@ namespace ServiceStack.ActiveMq
 					{
 						ActiveMqExtensions.Logger.Info($"Start worker [{i+1}] for type [{tuple.Item1}] ");
 						tuple.Item2[i] = await Worker.StartAsync(this, tuple.Item1);
+						await tuple.Item2[i].Dequeue();
 					}
 				});
 			ServiceStack.HostContext.AppHost.Register<IMessageService>(this);

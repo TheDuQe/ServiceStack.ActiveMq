@@ -16,7 +16,6 @@ namespace ServiceStack.ActiveMq
 		internal static async Task<Worker> StartAsync(Server service, ServiceStack.Messaging.IMessageHandlerFactory handlerFactory)
 		{
 			Worker client = new Worker(handlerFactory, service.MessageFactory, service.ErrorHandler);
-			await client.Dequeue();
 			return client;
 		}
 
