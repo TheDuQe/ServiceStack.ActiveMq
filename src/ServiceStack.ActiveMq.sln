@@ -1,16 +1,18 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.2010
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31702.278
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.ActiveMq", "ServiceStack.ActiveMq.csproj", "{22260189-E7D0-41C4-A23D-0A8712BC4E22}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.ActiveMq", "ServiceStack.ActiveMq\ServiceStack.ActiveMq.csproj", "{22260189-E7D0-41C4-A23D-0A8712BC4E22}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4FFA563D-F7E7-42B3-8A2A-46A58A005A56}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "___________________________", "___________________________", "{4FFA563D-F7E7-42B3-8A2A-46A58A005A56}"
 	ProjectSection(SolutionItems) = preProject
-		.gitattributes = .gitattributes
-		.gitignore = .gitignore
-		BuildAsJenkins.bat = BuildAsJenkins.bat
-		JenkinsFile = JenkinsFile
+		..\.gitignore = ..\.gitignore
+		..\BuildProcess.ps1 = ..\BuildProcess.ps1
+		..\BuildProcess.SolutionsBuildOrder.txt = ..\BuildProcess.SolutionsBuildOrder.txt
+		..\GitVersion.yml = ..\GitVersion.yml
+		..\JenkinsFile = ..\JenkinsFile
+		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
 Global

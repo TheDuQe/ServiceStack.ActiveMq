@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-    <TargetFrameworks>net45;netstandard20</TargetFrameworks>
+    <TargetFrameworks>net472;netcoreapp3.1</TargetFrameworks>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>Lectra</Authors>
     <Company>Lectra</Company>
@@ -28,16 +28,9 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="ServiceStack" Version="5.4.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'net45'">
     <PackageReference Include="Apache.NMS" Version="1.8.0" />
-    <PackageReference Include="Apache.NMS.ActiveMQ" Version="1.7.2" />
-    <PackageReference Include="Apache.NMS.Stomp" Version="1.5.4" />
-  </ItemGroup>
-    <ItemGroup Condition="'$(TargetFramework)' == 'netstandard20'">
-      <PackageReference Include="Apache.NMS.NetStd" Version="1.7.1.3899" />
-      <PackageReference Include="Apache.NMS.ActiveMQ.NetStd" Version="1.7.2.4115" />
-      <PackageReference Include="Apache.NMS.Stomp.NetStd" Version="1.5.4.3218" />
+    <PackageReference Include="Apache.NMS.ActiveMQ" Version="1.8.0" />
+    <PackageReference Include="Apache.NMS.Stomp" Version="1.5.4" Condition="'$(TargetFramework)'=='net472'" />
     </ItemGroup>
 	<ItemGroup>
 	  <None Update="nmsprovider.config">

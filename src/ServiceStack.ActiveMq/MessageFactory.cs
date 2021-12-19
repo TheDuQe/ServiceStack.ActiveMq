@@ -60,7 +60,7 @@ namespace ServiceStack.ActiveMq
 					((Apache.NMS.ActiveMQ.ConnectionFactory)this.ConnectionFactory).UserName = this.UserName;
 					((Apache.NMS.ActiveMQ.ConnectionFactory)this.ConnectionFactory).Password = this.Password;
 				}
-#if !NETCOREAPP2_0
+#if !NETCOREAPP3_1
 				if (this.TransportType == ConnectionType.STOMP)
 				{
 					this.GenerateConnectionId = new Func<string>((new Apache.NMS.Stomp.Util.IdGenerator(prefix)).GenerateSanitizedId);
@@ -145,7 +145,7 @@ namespace ServiceStack.ActiveMq
 			get
 			{
 				if (ConnectionFactory is Apache.NMS.ActiveMQ.ConnectionFactory) return ConnectionType.ActiveMQ;
-#if !NETCOREAPP2_0
+#if !NETCOREAPP3_1
 				if (ConnectionFactory is Apache.NMS.Stomp.ConnectionFactory) return ConnectionType.STOMP;
 #endif
 				return ConnectionType.ActiveMQ;

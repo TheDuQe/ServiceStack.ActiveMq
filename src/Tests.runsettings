@@ -1,0 +1,50 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+	<!-- Configurations that affect the Test Framework -->
+	<RunConfiguration>
+		<MaxCpuCount>1</MaxCpuCount>
+		<!-- Path relative to directory that contains .runsettings file-->
+		<!--<ResultsDirectory>..\TestResults</ResultsDirectory>-->
+
+		<!-- x86 or x64 -->
+		<!-- You can also change it from the Test menu; choose "Processor Architecture for AnyCPU Projects" -->
+		<TargetPlatform>X86</TargetPlatform>
+		<ResultsDirectory>..\..\TestResults</ResultsDirectory><!-- SOLUTION DIR  -->
+		<!-- Framework35 | [Framework40] | Framework45 -->
+		<!--<TargetFrameworkVersion>Framework45</TargetFrameworkVersion>-->
+
+		<!-- Path to Test Adapters -->
+		<!--<TestAdaptersPaths>%SystemDrive%\Temp\foo;%SystemDrive%\Temp\bar</TestAdaptersPaths>-->
+
+		<!-- TestSessionTimeout was introduced in Visual Studio 2017 version 15.5 -->
+		<!-- Specify timeout in milliseconds. A valid value should be greater than 0 -->
+		<!--<TestSessionTimeout>60000</TestSessionTimeout>-->
+		<TestCaseFilter>TestCategory=Buffer|Mediation|Sequencer</TestCaseFilter>
+	</RunConfiguration>
+
+	<!-- Configurations for data collectors -->
+	<DataCollectionRunSettings>
+
+	</DataCollectionRunSettings>
+
+	<!-- Parameters used by tests at run time -->
+	<!--<TestRunParameters>
+    <Parameter name="webAppUrl" value="http://localhost" />
+    <Parameter name="webAppUserName" value="Admin" />
+    <Parameter name="webAppPassword" value="Password" />
+  </TestRunParameters>-->
+
+	<!-- Adapter Specific sections -->
+
+	<!-- MSTest adapter -->
+	<MSTest>
+		<MapInconclusiveToFailed>True</MapInconclusiveToFailed>
+		<CaptureTraceOutput>false</CaptureTraceOutput>
+		<DeleteDeploymentDirectoryAfterTestRunIsComplete>true</DeleteDeploymentDirectoryAfterTestRunIsComplete>
+		<DeploymentEnabled>True</DeploymentEnabled>
+		<AssemblyResolution>
+			<Directory path=".\bin\Debug" includeSubDirectories="true"/>
+		</AssemblyResolution>
+	</MSTest>
+
+</RunSettings>
